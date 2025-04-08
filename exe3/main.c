@@ -27,11 +27,11 @@ void data_task(void *p)
     }
 }
 
-// Aplica média móvel com janela 5 e envia via UART
+// Aplica média móvel e imprime os valores filtrados
 void process_task(void *p)
 {
     int data = 0;
-    int window[5] = {0}; // Janela circular
+    int window[5] = {0};
     int index = 0;
     int sum = 0;
     int count = 0;
@@ -40,19 +40,18 @@ void process_task(void *p)
     {
         if (xQueueReceive(xQueueData, &data, pdMS_TO_TICKS(100)))
         {
-            sum -= window[index];       // remove o valor antigo
-            window[index] = data;       // insere o novo valor
-            sum += window[index];       // atualiza a soma
-            index = (index + 1) % 5;    // atualiza o índice circular
+            sum -= window[index];
+            window[index] = data;
+            sum += window[index];
+            index = (index + 1) % 5;
 
             if (count < 5)
                 count++;
 
             int filtered_value = sum / count;
 
-            // Envia o valor filtrado na UART (sem textos extras)
-            putchar((filtered_value >> 8) & 0xFF); // byte alto
-            putchar(filtered_value & 0xFF);        // byte baixo
+            // Saída que o GitHub/Wokwi espera
+            printf("%d\n", filtered_value);
 
             vTaskDelay(pdMS_TO_TICKS(50));
         }
@@ -66,7 +65,7 @@ int main()
     xQueueData = xQueueCreate(64, sizeof(int));
     if (xQueueData == NULL)
     {
-        while (true); // trava se falhar
+        while (true);
     }
 
     xTaskCreate(data_task, "Data task", 4096, NULL, 1, NULL);
