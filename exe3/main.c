@@ -9,16 +9,15 @@
 
 QueueHandle_t xQueueData;
 
-// Alimenta a fila com os dados do sinal
 void data_task(void *p)
 {
-    vTaskDelay(pdMS_TO_TICKS(400));
+    vTaskDelay(pdMS_TO_TICKS(400)); // Espera o sistema inicializar
 
     int data_len = sizeof(sine_wave_four_cycles) / sizeof(sine_wave_four_cycles[0]);
     for (int i = 0; i < data_len; i++)
     {
         xQueueSend(xQueueData, &sine_wave_four_cycles[i], portMAX_DELAY);
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(10)); // Evita saturar a fila
     }
 
     while (true)
@@ -27,9 +26,10 @@ void data_task(void *p)
     }
 }
 
-// Aplica média móvel e imprime os valores filtrados
 void process_task(void *p)
 {
+    vTaskDelay(pdMS_TO_TICKS(500)); // Dá tempo da fila encher com os primeiros dados
+
     int data = 0;
     int window[5] = {0};
     int index = 0;
@@ -50,8 +50,7 @@ void process_task(void *p)
 
             int filtered_value = sum / count;
 
-            // Saída que o GitHub/Wokwi espera
-            printf("%d\n", filtered_value);
+            printf("%d\n", filtered_value); // saída que o teste espera
 
             vTaskDelay(pdMS_TO_TICKS(50));
         }
